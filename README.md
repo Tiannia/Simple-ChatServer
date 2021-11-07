@@ -43,19 +43,19 @@ stream {
 
 #### 使用：
 
-1)获取项目 && 构建项目
+1) 获取项目 && 构建项目
 
 ```shell
 git clone git@github.com:Tiannia/Simple-ChatServer.git
 cd Simple-ChatServer
 ./autobuild.sh
 ```
-2)将`chat.sql`的内容导入至Mysql服务器中，并启动Mysql服务
+2) 将`chat.sql`的内容导入至Mysql服务器中，并启动Mysql服务
 ```shell
 sudo service mysql start
 ```
 
-3)单机启动：
+3) 单机启动：
 
 - 启动服务器：
 ```shell
@@ -67,7 +67,7 @@ cd bin
 ./ChatClient 127.0.0.1 6000
 ```
 
-4)多服务器启动：
+4) 多服务器启动：
 - 请确保Nginx已经启动，并且按照上述配置文件的内容配置完成
 - 请确保Redis已经启动
 
