@@ -13,7 +13,7 @@ pthread并非Linux系统的默认库, 而是POSIX线程库
 #include <pthread.h>
 #include <sys/prctl.h>
 
-#define MAX_BUF     64
+#define MAX_BUF 64
 
 static void * pthread_fun(void *arg){
 

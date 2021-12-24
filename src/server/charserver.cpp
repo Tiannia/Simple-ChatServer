@@ -42,7 +42,7 @@ void ChatServer::onConnection(const TcpConnectionPtr &conn)
     }
 }
 
-//上报读写事件相关信息的回调函数，收到消息了， 
+//上报读写事件相关信息的回调函数，收到消息了
 void ChatServer::onMessage(const TcpConnectionPtr &conn,
                            Buffer *buffer,
                            Timestamp time)

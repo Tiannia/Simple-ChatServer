@@ -34,6 +34,7 @@ bool isMainMenuRunning = false;
 
 //用于读写线程之间的通信
 sem_t rwsem;
+
 //记录登录状态
 atomic_bool g_isLoginSuccess{false};
 
