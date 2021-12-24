@@ -6,7 +6,7 @@
 - **编译组件**：cmake、g++9.3.0（本人使用的版本）
 - **http服务器**：nginx（稳定版即可）
 - **数据库**：redis（稳定版即可）、Mysql
-- **用到的库**：
+- **第三方库**：
   1. muduo网络库 （构建网络模块）
   2. JSON for Modern C++ （网络传输）
   3. hiredis （操作Redis数据库）
