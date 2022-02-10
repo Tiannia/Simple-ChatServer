@@ -6,5 +6,5 @@ CXX_FLAGS = -g
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/tian/workstation/test_try/charserver/include -I/home/tian/workstation/test_try/charserver/include/server -I/home/tian/workstation/test_try/charserver/thirdparty -I/home/tian/workstation/test_try/charserver/include/server/db -I/home/tian/workstation/test_try/charserver/include/server/redis -I/home/tian/workstation/test_try/charserver/include/server/model 
+CXX_INCLUDES = -I/home/tian/wk/Projects/Simple-ChatServer/include -I/home/tian/wk/Projects/Simple-ChatServer/include/server -I/home/tian/wk/Projects/Simple-ChatServer/thirdparty -I/home/tian/wk/Projects/Simple-ChatServer/include/server/db -I/home/tian/wk/Projects/Simple-ChatServer/include/server/redis -I/home/tian/wk/Projects/Simple-ChatServer/include/server/model 
 

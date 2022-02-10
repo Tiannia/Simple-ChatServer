@@ -27,6 +27,9 @@ src/server/CMakeFiles/ChatServer.dir/charservice.cpp.o: ../include/server/redis/
 src/server/CMakeFiles/ChatServer.dir/charservice.cpp.o: ../thirdparty/json.hpp
 src/server/CMakeFiles/ChatServer.dir/charservice.cpp.o: ../src/server/charservice.cpp
 
+src/server/CMakeFiles/ChatServer.dir/checkjson.cpp.o: ../src/server/checkjson.cpp
+src/server/CMakeFiles/ChatServer.dir/checkjson.cpp.o: ../thirdparty/checkjson.hpp
+
 src/server/CMakeFiles/ChatServer.dir/db/db.cpp.o: ../include/server/db/db.hpp
 src/server/CMakeFiles/ChatServer.dir/db/db.cpp.o: ../src/server/db/db.cpp
 
