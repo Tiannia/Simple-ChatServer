@@ -45,8 +45,8 @@ vector<Group> GroupModel::queryGroups(int userid)
     2. 在根据群组信息，查询属于该群组的所有用户的userid，并且和user表进行多表联合查询，查出用户的详细信息
     */
     char sql[1024] = {0};
-    sprintf(sql, "select a.id,a.groupname,a.groupdesc from allgroup a inner join \
-         groupuser b on a.id = b.groupid where b.userid=%d",
+    sprintf(sql, "select a.id, a.groupname, a.groupdesc from allgroup a inner join \
+         groupuser b on a.id = b.groupid where b.userid = %d",
             userid);
     //把指定用户的所在的群组信息全部描述出来
 	 
