@@ -11,16 +11,6 @@ connection_pool::connection_pool()
 	m_FreeConn = 0;
 }
 
-/*
-C++11前 这样的懒汉方式需要加一个互斥锁
-pthread_mutex_t single::lock;
-single* single::getinstance(){
-    pthread_mutex_lock(&lock);
-   	static single obj;
-    pthread_mutex_unlock(&lock);
-    return &obj;
-}
-*/
 connection_pool *connection_pool::GetInstance()
 {
 	static connection_pool connPool;
@@ -61,11 +51,9 @@ void connection_pool::init(string url, string User, string PassWord, string DBNa
 //当有请求时，从数据库连接池中返回一个可用连接，更新使用和空闲连接数
 MySQL *connection_pool::GetConnection()
 {
+    assert(connList.size() > 0);
 	MySQL *con = NULL;
-
-	if (0 == connList.size())
-		return NULL;
-
+	
 	reserve.wait();
 	
 	lock.lock();

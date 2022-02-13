@@ -2,8 +2,6 @@
 #include <iostream>
 using namespace std;
 
-// void *redisCommand(redisContext *c, const char *format, ...)
-// 格式化命令，并将命令添加到outubuf发送缓冲区中（调用 redisAppendCommand），如果是block模式的话，调用redisGetReply 获取应答。
 
 Redis::Redis() 
     : _publish_context(nullptr), _subcribe_context(nullptr)//两个上下文指针 
@@ -52,10 +50,14 @@ bool Redis::connect()
     return true;
 }
 
-//向redis指定的通道channel发布消息
+//功能：向redis指定的通道channel发布消息
 //redisCommand先把命令缓存在本地，然后把命令发送到redis-server，然后阻塞等待命令的执行结果 
+//1、redisAppendCommand 把命令写入本地发送缓冲区
+//2、redisBufferWrite 把本地缓冲区的命令通过网络发送出去
+//3、redisGetReply 阻塞等待redis server响应消息
 bool Redis::publish(int channel, string message)
 {
+    // void *redisCommand(redisContext *c, const char *format, ...)
     redisReply *reply = (redisReply *)redisCommand(_publish_context, "PUBLISH %d %s", channel, message.c_str());
     if (nullptr == reply)
     {
@@ -67,6 +69,7 @@ bool Redis::publish(int channel, string message)
 }
 
 //向redis指定的通道subscribe订阅消息
+//格式化命令，并将命令添加到outubuf发送缓冲区中（调用 redisAppendCommand），如果是block模式的话，调用redisGetReply 获取应答。
 bool Redis::subscribe(int channel)
 {
     //SUBSCRIBE命令本身会造成线程阻塞等待通道里面发生消息，这里只做订阅通道，不接收通道消息
@@ -126,9 +129,7 @@ typedef struct redisReply {
     size_t elements;                 //number of elements, for REDIS_REPLY_ARRAY 如果为数组存储数组长度
     struct redisReply **element;     //elements vector for REDIS_REPLY_ARRAY 存储数组元素向量
 } redisReply;
-
 */
-
 
 //在独立线程中接收订阅通道中的消息
 void Redis::observer_channel_message()

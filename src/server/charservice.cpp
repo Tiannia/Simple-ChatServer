@@ -53,7 +53,7 @@ MsgHandler ChatService::getHandler(int msgid)
         //返回一个默认的处理器，空操作，=按值获取
         return [=](const TcpConnectionPtr &conn, json &js, Timestamp)
         {
-            LOG_ERROR << "msgid:" << msgid << " can not find handler!"; //muduo日志会自动输出endl
+            LOG_ERROR << "msgid:" << msgid << " can not find handler!"; // muduo日志会自动输出endl
         };
     }
     else //成功的话
@@ -88,8 +88,8 @@ void ChatService::login(const TcpConnectionPtr &conn, json &js, Timestamp time)
                 _userConnMap.insert({id, conn});
             } //加个作用域，出了这个右括号就自动解锁
 
-            //id用户登录成功后，向redis订阅channel(id)
-            _redis.subscribe(id); 
+            // id用户登录成功后，向redis订阅channel(id)
+            _redis.subscribe(id);
 
             //登录成功，更新用户状态信息 state offline=>online
             user.setState("online");
@@ -104,7 +104,7 @@ void ChatService::login(const TcpConnectionPtr &conn, json &js, Timestamp time)
             vector<string> vec = _offlineMsgModel.query(id); //查当用户id
             if (!vec.empty())                                //不为空
             {
-                response["offlinemsg"] = vec; //json库可以和容器之间序列化和反序列化
+                response["offlinemsg"] = vec; // json库可以和容器之间序列化和反序列化
                 //读取该用户的离线消息后，把该用户的所有离线消息删除掉
                 _offlineMsgModel.remove(id);
             }
@@ -127,8 +127,8 @@ void ChatService::login(const TcpConnectionPtr &conn, json &js, Timestamp time)
             vector<Group> groupuserVec = _groupModel.queryGroups(id);
             if (!groupuserVec.empty())
             {
-                //group:[{groupid:[xxx, xxx, xxx, xxx]}]
-                //groups:[[id, groupname, groupdesc, users:[xxx(id, name, state, role), xxx, ...]], ...]
+                // group:[{groupid:[xxx, xxx, xxx, xxx]}]
+                // groups:[[id, groupname, groupdesc, users:[xxx(id, name, state, role), xxx, ...]], ...]
                 vector<string> groupV;
                 for (Group &group : groupuserVec)
                 {
@@ -253,7 +253,7 @@ void ChatService::oneChat(const TcpConnectionPtr &conn, json &js, Timestamp time
         auto it = _userConnMap.find(toid);  //查找对方id号
         if (it != _userConnMap.end())       //找到了
         {
-            //toid在线，转发消息  服务器主动推送消息给toid用户
+            // toid在线，转发消息  服务器主动推送消息给toid用户
             it->second->send(js.dump());
             return;
         }
@@ -266,7 +266,7 @@ void ChatService::oneChat(const TcpConnectionPtr &conn, json &js, Timestamp time
         return;
     }
 
-    //toid不在线，存储离线消息
+    // toid不在线，存储离线消息
     _offlineMsgModel.insert(toid, js.dump());
 }
 
@@ -276,8 +276,8 @@ void ChatService::addFriend(const TcpConnectionPtr &conn, json &js, Timestamp ti
     int userid = js["id"].get<int>();         //当前用户的id
     int friendid = js["friendid"].get<int>(); //添加好友的id
 
-    //存储好友信息
-    _friendModel.insert(userid, friendid);
+    if (userid != friendid)
+        _friendModel.insert(userid, friendid);
 }
 
 //创建群组业务

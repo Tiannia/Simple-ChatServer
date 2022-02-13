@@ -1,13 +1,10 @@
 #ifndef _CONNECTION_POOL_
 #define _CONNECTION_POOL_
 
-#include <stdio.h>
 #include <list>
-#include <mysql/mysql.h>
 #include <error.h>
 #include <string>
 #include <iostream>
-#include <string>
 #include "db.hpp"
 #include "locker.hpp"
 

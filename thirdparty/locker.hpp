@@ -29,7 +29,7 @@ public:
     bool wait()
     {
         return sem_wait(&m_sem) == 0;
-    }
+    }                            
     bool post()
     {
         return sem_post(&m_sem) == 0;
@@ -69,18 +69,6 @@ private:
     pthread_mutex_t m_mutex;
 };
 
-/*
- * 封装条件变量的类，此类与书本上的实现有所不同
- * 与条件变量协作的互斥锁不是封装在类里，而是以参数形式传入
- * pthread_cond_init函数用于初始化条件变量
- * pthread_cond_destory函数销毁条件变量
- * pthread_cond_wait函数用于等待目标条件变量.该函数调用时需要传入 mutex参数(必须是一个已经加锁的互斥锁),
-   函数执行时,先把调用线程放入条件变量的请求队列,然后将互斥锁mutex解锁,当函数成功返回为0时,互斥锁会再次被锁上.
-   也就是说函数内部会有一次解锁和加锁操作.
- * pthread_cond_broadcast函数以广播的方式唤醒所有等待目标条件变量的线程
- * pthread_cond_signal函数用于唤醒一个等待目标条件变量的线程，
-   至于哪个线程被唤醒，则取决于线程的优先级和调度策略
- */
 
 class cond
 {
@@ -97,7 +85,7 @@ public:
     {
         pthread_cond_destroy(&m_cond);
     }
-    //mark this.
+  
     /*
     * 参数m_mutex必须是一个已经上锁的互斥变量
     * 如果m_mutex的type是一个PTHREAD_MUTEX_NORMAL普通锁
