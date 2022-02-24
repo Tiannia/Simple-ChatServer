@@ -19,11 +19,8 @@ int main()
     mp[1] = 6;
     for (auto it : mp)
     {
-        if (it.second == 6)
-        {
-            mp.erase(it.first);
-        }
         cout << mp.begin()->first << endl;
+        cout << next(mp.begin())->first << endl;
     }
     /*
         for(auto it: _userConnMap)

@@ -38,6 +38,7 @@ public:
 private:
     sem_t m_sem;
 };
+
 class locker
 {
 public:
@@ -69,7 +70,6 @@ private:
     pthread_mutex_t m_mutex;
 };
 
-
 class cond
 {
 public:
@@ -77,7 +77,6 @@ public:
     {
         if (pthread_cond_init(&m_cond, NULL) != 0)
         {
-            //pthread_mutex_destroy(&m_mutex);
             throw std::exception();
         }
     }
@@ -85,29 +84,16 @@ public:
     {
         pthread_cond_destroy(&m_cond);
     }
-  
-    /*
-    * 参数m_mutex必须是一个已经上锁的互斥变量
-    * 如果m_mutex的type是一个PTHREAD_MUTEX_NORMAL普通锁
-    可以通过pthread_mutex_trylock的方式判断返回值来检测原先是否已经加锁
-    别忘了如果trylock成功要记得解锁
-    * 但是涉及到pthread_mutex_t的属性type还有别的类型的锁
-    * 只能将安全性结果交给函数外保证
-    */
     bool wait(pthread_mutex_t *m_mutex)
     {
         int ret = 0;
-        //pthread_mutex_lock(&m_mutex);
         ret = pthread_cond_wait(&m_cond, m_mutex);
-        //pthread_mutex_unlock(&m_mutex);
         return ret == 0;
     }
     bool timewait(pthread_mutex_t *m_mutex, struct timespec t)
     {
         int ret = 0;
-        //pthread_mutex_lock(&m_mutex);
         ret = pthread_cond_timedwait(&m_cond, m_mutex, &t);
-        //pthread_mutex_unlock(&m_mutex);
         return ret == 0;
     }
     bool signal()
@@ -120,7 +106,6 @@ public:
     }
 
 private:
-    //static pthread_mutex_t m_mutex;
     pthread_cond_t m_cond;
 };
 #endif

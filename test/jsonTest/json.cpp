@@ -5,6 +5,7 @@
 #include "./checkjson.hpp"
 #include "../../thirdparty/json.hpp"
 
+
 using json = nlohmann::json;
 using namespace std;
 
@@ -75,6 +76,7 @@ int main() {
     // cout << j2.dump() << endl;
     JsonString jsc;
     string teststr = j2.dump();
+    cout << teststr << endl;
     const char * ctestbegin = teststr.c_str();
     const char * ctestend = ctestbegin + strlen(ctestbegin);
     cout << "ctestbegin-> " << ctestbegin << endl;
