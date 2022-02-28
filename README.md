@@ -7,7 +7,7 @@
 - **http服务器**：nginx
 - **数据库**：redis、Mysql
 - **第三方库**：
-  1. muduo网络库
+  1. muduo
   2. JSON for Modern C++
   3. hiredis
 
