@@ -1,5 +1,6 @@
 USE chat;
 
+drop table if exists `user`;
 CREATE TABLE `user`
 (
 id INT AUTO_INCREMENT,
@@ -9,6 +10,7 @@ state ENUM('online','offline') DEFAULT'offline',
 PRIMARY KEY(id)
 )ENGINE=INNODB;
 
+drop table if exists `friend`;
 CREATE TABLE friend
 (
 `userid` INT NOT NULL,
@@ -16,6 +18,7 @@ CREATE TABLE friend
 PRIMARY KEY(`userid`,`friendid`)
 )ENGINE=INNODB;
 
+drop table if exists `allgroup`;
 CREATE TABLE allgroup
 (
 id INT AUTO_INCREMENT,
@@ -24,6 +27,7 @@ groupdesc VARCHAR(200) DEFAULT'',
 PRIMARY KEY(id)
 )ENGINE=INNODB;
 
+drop table if exists `groupuser`;
 CREATE TABLE groupuser
 (
 groupid INT NOT NULL,
@@ -32,6 +36,7 @@ groupprole enum('creator','normal') DEFAULT'normal',
 PRIMARY KEY(groupid,userid)
 )ENGINE=INNODB;
 
+drop table if exists `offlinemessage`;
 CREATE TABLE offlinemessage
 (
 userid INT NOT NULL,
