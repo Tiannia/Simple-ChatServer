@@ -42,4 +42,3 @@ CREATE TABLE offlinemessage
 userid INT NOT NULL,
 message VARCHAR(500) NOT NULL
 )ENGINE=INNODB;
-
