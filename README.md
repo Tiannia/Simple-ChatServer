@@ -1,15 +1,11 @@
 ## 集群聊天服务器
-
+基于TCP协议实现的多人聊天服务器，支持单机/集群，包含客户端与服务端。
 
 #### Tools：
-- **开发平台**：vscode（ubuntu）
-- **编译组件**：cmake、g++9.3.0
-- **http服务器**：nginx
-- **数据库**：redis、Mysql
-- **第三方库**：
-  1. muduo
-  2. JSON for Modern C++
-  3. hiredis
+- **Dev Platform**：vscode（ubuntu）、cmake、g++9.3.0
+- **http Server**：nginx
+- **Database**：redis、Mysql
+- **Third Party**：muduo、JSON for Modern C++、hiredis
 
 #### 模块组成：
 
