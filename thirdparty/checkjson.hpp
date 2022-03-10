@@ -10,9 +10,10 @@ class JsonString
 {
 public:
 	typedef const char* Location;
-	JsonString();
+	JsonString():objnum(0), begin_(nullptr), end_(nullptr), current_(nullptr){}
  
 	/* 检测json字符串格式是否合法 */
+	bool CheckFormat(std::string str);
 	bool CheckFormat(const char *begin, const char *end);
  
 private:
@@ -61,11 +62,13 @@ private:
 };
 
  
-JsonString::JsonString()
+bool JsonString::CheckFormat(std::string str)
 {
-	objnum = 0;
+	const char * strbegin = str.c_str();
+    const char * strend = strbegin + str.size();
+	return CheckFormat(strbegin, strend);
 }
- 
+
 /* 验证json字符串的合法性 */
 bool JsonString::CheckFormat(const char* strbegin, const char *strend)
 {
@@ -162,7 +165,7 @@ void JsonString::ReadNumber()
 	}
 }
  
-bool JsonString::ReadToken( Token &token)
+bool JsonString::ReadToken(Token &token)
 {
 	SkipSpace();
 	char c = GetNextChar();
