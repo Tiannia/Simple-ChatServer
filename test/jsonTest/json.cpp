@@ -2,12 +2,24 @@
 #include <vector>
 #include <unordered_map>
 #include <map>
-#include "./checkjson.hpp"
+#include "../../thirdparty/checkjson.hpp"
 #include "../../thirdparty/json.hpp"
 
 
 using json = nlohmann::json;
 using namespace std;
+JsonString jsc;
+
+void check(string str)
+{
+    cout << str << endl;
+    if(jsc.CheckFormat(str)){
+        cout << "is ok." << endl;
+    }else{
+        cout << "not ok." << endl;
+    }
+}
+
 
 int main() {
     // 创建一个json对象(null)
@@ -17,7 +29,7 @@ int main() {
 
 
     //添加一个存储为double的数字
-    j["pi"] = 3.141;
+    j["pi"] = 12345;
 
     // 添加一个布尔值 
     j["happy"] = true;
@@ -67,24 +79,14 @@ int main() {
         }}
     };
     ve.push_back(j);
-    // cout << ve << endl;
-    // cout << endl;
-    // cout << j << endl;
-    // cout << endl;
-    // cout << j2 << endl;
-    // cout << endl;
-    // cout << j2.dump() << endl;
-    JsonString jsc;
-    string teststr = j2.dump();
-    cout << teststr << endl;
-    const char * ctestbegin = teststr.c_str();
-    const char * ctestend = ctestbegin + strlen(ctestbegin);
-    cout << "ctestbegin-> " << ctestbegin << endl;
-    cout << "ctestend-> " << ctestend - 1 << endl;
-    if(jsc.CheckFormat(ctestbegin, ctestend)){
-        cout << "is ok." << endl;
-    }else{
-        cout << "not ok." << endl;
-    }
+
+    json j3 = {
+        {"pi", "haha"},
+        {"gg", {"aa", "bb", "cc", 123}},
+    };
+
+    check(j2.dump());
+    check(j.dump());
+    check(j3.dump());
     return 0;
 }
