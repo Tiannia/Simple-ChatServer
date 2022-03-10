@@ -327,6 +327,12 @@ void readTaskHandler(int clientfd)
             sem_post(&rwsem);//通知主线程，注册结果处理完成
             continue;
         }
+
+        if (ERROR_MSG == msgtype)
+        {
+            cout << "[ERROR]: " << js["msg"].get<string>() << endl;
+            continue;
+        }
     }
 }
 
@@ -476,7 +482,7 @@ void chat(int clientfd, string str)
     js["toid"] = friendid;
     js["msg"] = message;
     js["time"] = getCurrentTime();
-    string buffer = js.dump();//序列化 
+    string buffer = js.dump(); //序列化 
 
     int len = send(clientfd, buffer.c_str(), strlen(buffer.c_str()) + 1, 0);
     if (-1 == len)
@@ -528,6 +534,7 @@ void addgroup(int clientfd, string str)
         cerr << "send addgroup msg error -> " << buffer << endl;
     }
 }
+
 //"groupchat" command handler   groupid:message
 void groupchat(int clientfd, string str)
 {
@@ -556,6 +563,7 @@ void groupchat(int clientfd, string str)
         cerr << "send groupchat msg error -> " << buffer << endl;
     }
 }
+
 //"loginout" command handler
 void loginout(int clientfd, string)
 {

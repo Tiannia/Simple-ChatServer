@@ -266,6 +266,22 @@ void ChatService::oneChat(const TcpConnectionPtr &conn, json &js, Timestamp time
         return;
     }
 
+    if (user.getId() == -1) //用户不存在，返回错误信息给聊天发送方
+    {
+        toid = js["id"].get<int>();
+        js["msgid"] = ERROR_MSG;
+        js["msg"] = "user does not exist, please check!";
+        {
+            lock_guard<mutex> lock(_connMutex);
+            auto it = _userConnMap.find(toid);
+            if(it != _userConnMap.end())
+            {
+                it->second->send(js.dump());
+            }
+        }
+        return;
+    }
+
     // toid不在线，存储离线消息
     _offlineMsgModel.insert(toid, js.dump());
 }
@@ -275,6 +291,22 @@ void ChatService::addFriend(const TcpConnectionPtr &conn, json &js, Timestamp ti
 {
     int userid = js["id"].get<int>();         //当前用户的id
     int friendid = js["friendid"].get<int>(); //添加好友的id
+
+    User user = _userModel.query(friendid);
+    if(user.getId() == -1)
+    {
+        js["msgid"] = ERROR_MSG;
+        js["msg"] = "user does not exist, please check!";
+        {
+            lock_guard<mutex> lock(_connMutex);
+            auto it = _userConnMap.find(userid);
+            if(it != _userConnMap.end())
+            {
+                it->second->send(js.dump());
+            }
+        }
+        return;
+    }
 
     if (userid != friendid)
         _friendModel.insert(userid, friendid);
