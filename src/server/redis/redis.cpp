@@ -1,10 +1,10 @@
 #include "redis.hpp"
+#include <muduo/base/Logging.h>
 #include <iostream>
 using namespace std;
 
-
-Redis::Redis() 
-    : _publish_context(nullptr), _subcribe_context(nullptr)//两个上下文指针 
+Redis::Redis()
+    : _publish_context(nullptr), _subcribe_context(nullptr) //两个上下文指针
 {
 }
 
@@ -27,7 +27,7 @@ bool Redis::connect()
     _publish_context = redisConnect("127.0.0.1", 6379);
     if (nullptr == _publish_context)
     {
-        cerr << "connect redis failed!" << endl;
+        LOG_ERROR << "connect redis failed!";
         return false;
     }
 
@@ -35,33 +35,32 @@ bool Redis::connect()
     _subcribe_context = redisConnect("127.0.0.1", 6379);
     if (nullptr == _subcribe_context)
     {
-        cerr << "connect redis failed!" << endl;
+        LOG_ERROR << "connect redis failed!";
         return false;
     }
 
     //在单独的线程中，监听通道上的事件，有消息给业务层进行上报
-    thread t([&]() {
-        observer_channel_message();
-    });
+    thread t([&]()
+             { observer_channel_message(); });
     t.detach();
 
-    cout << "connect redis-server success!" << endl;
+    LOG_INFO << "connect redis-server success!";
 
     return true;
 }
 
 //功能：向redis指定的通道channel发布消息
-//redisCommand先把命令缓存在本地，然后把命令发送到redis-server，然后阻塞等待命令的执行结果 
-//1、redisAppendCommand 把命令写入本地发送缓冲区
-//2、redisBufferWrite 把本地缓冲区的命令通过网络发送出去
-//3、redisGetReply 阻塞等待redis server响应消息
+// redisCommand先把命令缓存在本地，然后把命令发送到redis-server，然后阻塞等待命令的执行结果
+// 1、redisAppendCommand 把命令写入本地发送缓冲区
+// 2、redisBufferWrite 把本地缓冲区的命令通过网络发送出去
+// 3、redisGetReply 阻塞等待redis server响应消息
 bool Redis::publish(int channel, string message)
 {
     // void *redisCommand(redisContext *c, const char *format, ...)
     redisReply *reply = (redisReply *)redisCommand(_publish_context, "PUBLISH %d %s", channel, message.c_str());
     if (nullptr == reply)
     {
-        cerr << "publish command failed!" << endl;
+        LOG_ERROR << "publish command failed!";
         return false;
     }
     freeReplyObject(reply);
@@ -72,25 +71,25 @@ bool Redis::publish(int channel, string message)
 //格式化命令，并将命令添加到outubuf发送缓冲区中（调用 redisAppendCommand），如果是block模式的话，调用redisGetReply 获取应答。
 bool Redis::subscribe(int channel)
 {
-    //SUBSCRIBE命令本身会造成线程阻塞等待通道里面发生消息，这里只做订阅通道，不接收通道消息
+    // SUBSCRIBE命令本身会造成线程阻塞等待通道里面发生消息，这里只做订阅通道，不接收通道消息
     //通道消息的接收专门在observer_channel_message函数中的 独立线程 中进行
     //只负责发送命令，不阻塞接收redis server响应消息，否则和notifyMsg线程抢占响应资源
     if (REDIS_ERR == redisAppendCommand(this->_subcribe_context, "SUBSCRIBE %d", channel))
     {
-        cerr << "subscribe command failed!" << endl;
+        LOG_ERROR << "subscribe command failed!";
         return false;
     }
-    //redisBufferWrite可以循环发送缓冲区，直到缓冲区数据发送完毕（done被置为1）
+    // redisBufferWrite可以循环发送缓冲区，直到缓冲区数据发送完毕（done被置为1）
     int done = 0;
     while (!done)
     {
         if (REDIS_ERR == redisBufferWrite(this->_subcribe_context, &done))
         {
-            cerr << "subscribe command failed!" << endl;
+            LOG_ERROR << "subscribe command failed!";
             return false;
         }
     }
-    //redisGetReply
+    // redisGetReply
 
     return true;
 }
@@ -100,31 +99,30 @@ bool Redis::unsubscribe(int channel)
 {
     if (REDIS_ERR == redisAppendCommand(this->_subcribe_context, "UNSUBSCRIBE %d", channel))
     {
-        cerr << "unsubscribe command failed!" << endl;
+        LOG_ERROR << "unsubscribe command failed!";
         return false;
     }
-    //redisBufferWrite可以循环发送缓冲区，直到缓冲区数据发送完毕（done被置为1）
+    // redisBufferWrite可以循环发送缓冲区，直到缓冲区数据发送完毕（done被置为1）
     int done = 0;
     while (!done)
     {
         if (REDIS_ERR == redisBufferWrite(this->_subcribe_context, &done))
         {
-            cerr << "unsubscribe command failed!" << endl;
+            LOG_ERROR << "unsubscribe command failed!";
             return false;
         }
     }
     return true;
 }
 
-
-/* 
+/*
 This is the reply object returned by redisCommand()
 执行redis数据库指令操作的响应信息封装在redisReply的结构体中
 
 typedef struct redisReply {
-    int type;                        //REDIS_REPLY_* 
-    long long integer;               //The integer when type is REDIS_REPLY_INTEGER 
-    int len;                         //Length of string 存储字符串长度 
+    int type;                        //REDIS_REPLY_*
+    long long integer;               //The integer when type is REDIS_REPLY_INTEGER
+    int len;                         //Length of string 存储字符串长度
     char *str;                       //Used for both REDIS_REPLY_ERROR and REDIS_REPLY_STRING 错误信息和返回的string类型
     size_t elements;                 //number of elements, for REDIS_REPLY_ARRAY 如果为数组存储数组长度
     struct redisReply **element;     //elements vector for REDIS_REPLY_ARRAY 存储数组元素向量
@@ -141,16 +139,16 @@ void Redis::observer_channel_message()
         if (reply != nullptr && reply->element[2] != nullptr && reply->element[2]->str != nullptr)
         {
             //给业务层上报通道上发生的消息
-            _notify_message_handler(atoi(reply->element[1]->str) , reply->element[2]->str);
+            _notify_message_handler(atoi(reply->element[1]->str), reply->element[2]->str);
         }
 
         freeReplyObject(reply);
     }
 
-    cerr << ">>>>>>>>>>>>> observer_channel_message quit <<<<<<<<<<<<<" << endl;
+    LOG_ERROR << ">>>>>>>>>>>>> observer_channel_message quit <<<<<<<<<<<<<";
 }
 
-void Redis::init_notify_handler(function<void(int,string)> fn)
+void Redis::init_notify_handler(function<void(int, string)> fn)
 {
     this->_notify_message_handler = fn;
 }

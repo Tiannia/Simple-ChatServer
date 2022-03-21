@@ -22,7 +22,7 @@ using json = nlohmann::json;
 #include "user.hpp"
 #include "public.hpp"
 
-//记录当前系统登录的用户信息，记录哪个用户在使用这个聊天客户端 
+//记录当前系统登录的用户信息，记录哪个用户在使用这个聊天客户端
 User g_currentUser;
 //记录当前登录用户的好友列表信息
 vector<User> g_currentUserFriendList;
@@ -38,8 +38,7 @@ sem_t rwsem;
 //记录登录状态
 atomic_bool g_isLoginSuccess{false};
 
-
-//接收线程 控制台应用程序，接收用户的手动输入，用户不输入cin就阻塞住，所以要2个线程 
+//接收线程 控制台应用程序，接收用户的手动输入，用户不输入cin就阻塞住，所以要2个线程
 void readTaskHandler(int clientfd);
 //获取系统时间（聊天信息需要添加时间信息）
 string getCurrentTime();
@@ -51,7 +50,7 @@ void showCurrentUserData();
 //聊天客户端程序实现，main线程用作发送线程，子线程用作接收线程
 int main(int argc, char **argv)
 {
-    if (argc < 3)//判断命令的个数，客户端启动要输入命令行的ip地址和端口port 
+    if (argc < 3) //判断命令的个数，客户端启动要输入命令行的ip地址和端口port
     {
         cerr << "command invalid! example: ./ChatClient 127.0.0.1 6000" << endl;
         exit(-1);
@@ -74,14 +73,14 @@ int main(int argc, char **argv)
     memset(&server, 0, sizeof(sockaddr_in));
 
     server.sin_family = AF_INET;
-    server.sin_port = htons(port);  //将主机字节顺序转换为网络字节顺序（常规操作了）
+    server.sin_port = htons(port); //将主机字节顺序转换为网络字节顺序（常规操作了）
     server.sin_addr.s_addr = inet_addr(ip);
 
-    //client和server进行连接
+    // client和server进行连接
     if (-1 == connect(clientfd, (sockaddr *)&server, sizeof(sockaddr_in)))
     {
         cerr << "connect server error" << endl;
-        close(clientfd);//连接失败就关闭描述符 
+        close(clientfd); //连接失败就关闭描述符
         exit(-1);
     }
 
@@ -89,8 +88,8 @@ int main(int argc, char **argv)
     sem_init(&rwsem, 0, 0);
 
     //连接服务器成功，启动接收子线程
-    std::thread readTask(readTaskHandler, clientfd); //pthread_create
-    readTask.detach();                               //pthread_detach
+    std::thread readTask(readTaskHandler, clientfd); // pthread_create
+    readTask.detach();                               // pthread_detach
 
     //无限循环， main线程用于接收用户输入，负责发送数据
     for (;;)
@@ -103,21 +102,21 @@ int main(int argc, char **argv)
         cout << "========================" << endl;
         cout << "choice:";
         int choice = 0;
-        cin >> choice;//输入选择，整数，我们在输入的时候有加回车 
-        cin.get();//读掉缓冲区残留的回车
+        cin >> choice; //输入选择，整数，我们在输入的时候有加回车
+        cin.get();     //读掉缓冲区残留的回车
 
         switch (choice)
         {
-        case 1://login登录业务
+        case 1: // login登录业务
         {
             int id = 0;
             char pwd[50] = {0};
             cout << "userid:";
             cin >> id;
-            cin.get();//读掉缓冲区残留的回车
+            cin.get(); //读掉缓冲区残留的回车
             cout << "userpassword:";
             cin.getline(pwd, 50);
-            //客户端和服务器要保持语言一致！！！ 
+            //客户端和服务器要保持语言一致！！！
             json js;
             js["msgid"] = LOGIN_MSG;
             js["id"] = id;
@@ -132,9 +131,9 @@ int main(int argc, char **argv)
                 cerr << "send login msg error:" << request << endl;
             }
 
-            sem_wait(&rwsem);//等待信号量，由子线程处理完登录的响应消息后，通知这里
-                
-            if (g_isLoginSuccess)//登录成功了 
+            sem_wait(&rwsem); //等待信号量，由子线程处理完登录的响应消息后，通知这里
+
+            if (g_isLoginSuccess) //登录成功了
             {
                 //进入聊天主菜单页面
                 isMainMenuRunning = true;
@@ -142,12 +141,12 @@ int main(int argc, char **argv)
             }
         }
         break;
-        case 2://register注册业务
+        case 2: // register注册业务
         {
             char name[50] = {0};
             char pwd[50] = {0};
             cout << "username:";
-            cin.getline(name, 50);//cin()有回车才结束，遇见空格就结束一个参数的输入 
+            cin.getline(name, 50); // cin()有回车才结束，遇见空格就结束一个参数的输入
             cout << "userpassword:";
             cin.getline(pwd, 50);
 
@@ -155,22 +154,22 @@ int main(int argc, char **argv)
             js["msgid"] = REG_MSG;
             js["name"] = name;
             js["password"] = pwd;
-            string request = js.dump();//json对象序列化成字符串 
+            string request = js.dump(); // json对象序列化成字符串
 
             int len = send(clientfd, request.c_str(), strlen(request.c_str()) + 1, 0);
-            if (len == -1)//注册失败 
+            if (len == -1) //注册失败
             {
                 cerr << "send reg msg error:" << request << endl;
             }
-            
+
             sem_wait(&rwsem); //等待信号量，子线程处理完注册消息会通知
         }
         break;
-        case 3://quit退出业务，因为还没登录，就退出 
-            close(clientfd);//关闭描述符 
+        case 3:              // quit退出业务，因为还没登录，就退出
+            close(clientfd); //关闭描述符
             sem_destroy(&rwsem);
             exit(0);
-        default://除了1,2,3 
+        default: //除了1,2,3
             cerr << "invalid input!" << endl;
             break;
         }
@@ -182,26 +181,26 @@ int main(int argc, char **argv)
 //处理注册的响应逻辑
 void doRegResponse(json &responsejs)
 {
-    if (0 != responsejs["errno"].get<int>())//注册失败
+    if (0 != responsejs["errno"].get<int>()) //注册失败
     {
         cerr << "name is already exist, register error!" << endl;
     }
-    else//注册成功
+    else //注册成功
     {
         cout << "name register success, userid is " << responsejs["id"]
-                << ", do not forget it!" << endl;
+             << ", do not forget it!" << endl;
     }
 }
 
 //处理登录的响应逻辑
 void doLoginResponse(json &responsejs)
 {
-    if (0 != responsejs["errno"].get<int>())//登录失败
+    if (0 != responsejs["errno"].get<int>()) //登录失败
     {
         cerr << responsejs["errmsg"] << endl;
         g_isLoginSuccess = false;
     }
-    else//登录成功
+    else //登录成功
     {
         //记录当前用户的id和name
         g_currentUser.setId(responsejs["id"].get<int>());
@@ -212,7 +211,7 @@ void doLoginResponse(json &responsejs)
         {
             //初始化
             g_currentUserFriendList.clear();
-            //重新装入，新的登录 
+            //重新装入，新的登录
             vector<string> vec = responsejs["friends"];
             for (string &str : vec)
             {
@@ -270,12 +269,12 @@ void doLoginResponse(json &responsejs)
                 if (ONE_CHAT_MSG == js["msgid"].get<int>())
                 {
                     cout << js["time"].get<string>() << " [" << js["id"] << "]" << js["name"].get<string>()
-                            << " said: " << js["msg"].get<string>() << endl;
+                         << " said: " << js["msg"].get<string>() << endl;
                 }
                 else
                 {
                     cout << "群消息[" << js["groupid"] << "]:" << js["time"].get<string>() << " [" << js["id"] << "]" << js["name"].get<string>()
-                            << " said: " << js["msg"].get<string>() << endl;
+                         << " said: " << js["msg"].get<string>() << endl;
                 }
             }
         }
@@ -284,13 +283,13 @@ void doLoginResponse(json &responsejs)
     }
 }
 
-//登录成功后，启动子线程 - 接收线程 
+//登录成功后，启动子线程 - 接收线程
 void readTaskHandler(int clientfd)
 {
     for (;;)
     {
         char buffer[1024] = {0};
-        int len = recv(clientfd, buffer, 1024, 0);//阻塞了
+        int len = recv(clientfd, buffer, 1024, 0); //阻塞了
         if (-1 == len || 0 == len)
         {
             close(clientfd);
@@ -300,35 +299,35 @@ void readTaskHandler(int clientfd)
         //接收ChatServer转发的数据，反序列化生成json数据对象
         json js = json::parse(buffer);
         int msgtype = js["msgid"].get<int>();
-        if (ONE_CHAT_MSG == msgtype)//如果是聊天消息的话 
+        if (ONE_CHAT_MSG == msgtype) //如果是聊天消息的话
         {
             cout << js["time"].get<string>() << " [" << js["id"] << "]" << js["name"].get<string>()
                  << " said: " << js["msg"].get<string>() << endl;
             continue;
         }
 
-        if (GROUP_CHAT_MSG == msgtype)//如果是群组消息 
+        if (GROUP_CHAT_MSG == msgtype) //如果是群组消息
         {
             cout << "群消息[" << js["groupid"] << "]:" << js["time"].get<string>() << " [" << js["id"] << "]" << js["name"].get<string>()
                  << " said: " << js["msg"].get<string>() << endl;
             continue;
         }
 
-        if (LOGIN_MSG_ACK == msgtype)//登录响应消息 
+        if (LOGIN_MSG_ACK == msgtype) //登录响应消息
         {
-            doLoginResponse(js);//处理登录响应的业务逻辑
-            sem_post(&rwsem);   //通知主线程，登录结果处理完成
+            doLoginResponse(js); //处理登录响应的业务逻辑
+            sem_post(&rwsem);    //通知主线程，登录结果处理完成
             continue;
         }
 
-        if (REG_MSG_ACK == msgtype)//注册响应消息 
+        if (REG_MSG_ACK == msgtype) //注册响应消息
         {
             doRegResponse(js);
-            sem_post(&rwsem);//通知主线程，注册结果处理完成
+            sem_post(&rwsem); //通知主线程，注册结果处理完成
             continue;
         }
 
-        if (ERROR_MSG == msgtype)
+        if (ERROR_MSG == msgtype) //错误消息
         {
             cout << "[ERROR]: " << js["msg"].get<string>() << endl;
             continue;
@@ -342,15 +341,15 @@ void showCurrentUserData()
     cout << "======================login user======================" << endl;
     cout << "current login user => id:" << g_currentUser.getId() << " name:" << g_currentUser.getName() << endl;
     cout << "----------------------friend list---------------------" << endl;
-    if (!g_currentUserFriendList.empty())//如果好友列表不为空 
+    if (!g_currentUserFriendList.empty()) //如果好友列表不为空
     {
-        for (User &user : g_currentUserFriendList)//打印好友列表id和名字和状态 
+        for (User &user : g_currentUserFriendList) //打印好友列表id和名字和状态
         {
             cout << user.getId() << " " << user.getName() << " " << user.getState() << endl;
         }
     }
     cout << "----------------------group list----------------------" << endl;
-    if (!g_currentUserGroupList.empty())//群组信息不为空，也打印出来 
+    if (!g_currentUserGroupList.empty()) //群组信息不为空，也打印出来
     {
         for (Group &group : g_currentUserGroupList)
         {
@@ -365,7 +364,7 @@ void showCurrentUserData()
     cout << "======================================================" << endl;
 }
 
-//命令处理方法的声明 ，传递client的fd，用户输入的数据string 
+//命令处理方法的声明 ，传递client的fd，用户输入的数据string
 //"help" command handler
 void help(int fd = 0, string str = "");
 //"chat" command handler
@@ -381,7 +380,7 @@ void groupchat(int, string);
 //"loginout" command handler
 void loginout(int, string);
 
-//系统支持的客户端命令列表，clientmap 
+//系统支持的客户端命令列表，clientmap
 unordered_map<string, string> commandMap = {
     {"help", "显示所有支持的命令，格式help"},
     {"chat", "一对一聊天，格式chat:friendid:message"},
@@ -391,7 +390,7 @@ unordered_map<string, string> commandMap = {
     {"groupchat", "群聊，格式groupchat:groupid:message"},
     {"loginout", "注销，格式loginout"}};
 
-//注册系统支持的客户端命令处理,function函数指针函数对象类型 ，如果发现命令就执行相应的方法 
+//注册系统支持的客户端命令处理,function函数指针函数对象类型 ，如果发现命令就执行相应的方法
 unordered_map<string, function<void(int, string)>> commandHandlerMap = {
     {"help", help},
     {"chat", chat},
@@ -401,36 +400,36 @@ unordered_map<string, function<void(int, string)>> commandHandlerMap = {
     {"groupchat", groupchat},
     {"loginout", loginout}};
 
-//主聊天页面程序，先显示一下系统支持的命令 
+//主聊天页面程序，先显示一下系统支持的命令
 void mainMenu(int clientfd)
 {
-    help();//参数有默认值 
+    help(); //参数有默认值
 
     char buffer[1024] = {0};
-    while (isMainMenuRunning)//不断的输出 
+    while (isMainMenuRunning) //不断的输出
     {
         cin.getline(buffer, 1024);
         string commandbuf(buffer);
-        string command;//存储命令
-        int idx = commandbuf.find(":");//找到了返回字符的起始下标 
-        if (-1 == idx)//没找到 
+        string command;                 //存储命令
+        int idx = commandbuf.find(":"); //找到了返回字符的起始下标
+        if (-1 == idx)                  //没找到
         {
             command = commandbuf;
         }
-        else//找到了 
+        else //找到了
         {
-            command = commandbuf.substr(0, idx);//把命令取出来 
+            command = commandbuf.substr(0, idx); //把命令取出来
         }
-        auto it = commandHandlerMap.find(command);//在maop表找 
-        if (it == commandHandlerMap.end())//找不到 
+        auto it = commandHandlerMap.find(command); //在maop表找
+        if (it == commandHandlerMap.end())         //找不到
         {
-            cerr << "invalid input command!" << endl;//重新输入 
+            cerr << "invalid input command!" << endl; //重新输入
             continue;
         }
 
-        //second命令名字对应的处理函数
-		//调用相应命令的事件处理回调，mainMenu对修改封闭，添加新功能不需要修改该函数
-        it->second(clientfd, commandbuf.substr(idx + 1, commandbuf.size() - idx));//调用命令处理方法
+        // second命令名字对应的处理函数
+        //调用相应命令的事件处理回调，mainMenu对修改封闭，添加新功能不需要修改该函数
+        it->second(clientfd, commandbuf.substr(idx + 1, commandbuf.size() - idx)); //调用命令处理方法
     }
 }
 
@@ -448,12 +447,12 @@ void help(int, string)
 //"addfriend" command handler
 void addfriend(int clientfd, string str)
 {
-    int friendid = atoi(str.c_str());//转为整数 
+    int friendid = atoi(str.c_str()); //转为整数
     json js;
     js["msgid"] = ADD_FRIEND_MSG;
     js["id"] = g_currentUser.getId();
     js["friendid"] = friendid;
-    string buffer = js.dump();//序列化 
+    string buffer = js.dump(); //序列化
 
     int len = send(clientfd, buffer.c_str(), strlen(buffer.c_str()) + 1, 0);
     if (-1 == len)
@@ -482,7 +481,7 @@ void chat(int clientfd, string str)
     js["toid"] = friendid;
     js["msg"] = message;
     js["time"] = getCurrentTime();
-    string buffer = js.dump(); //序列化 
+    string buffer = js.dump(); //序列化
 
     int len = send(clientfd, buffer.c_str(), strlen(buffer.c_str()) + 1, 0);
     if (-1 == len)
@@ -501,15 +500,15 @@ void creategroup(int clientfd, string str)
         return;
     }
 
-    string groupname = str.substr(0, idx);//获取群名 
-    string groupdesc = str.substr(idx + 1, str.size() - idx);//获取群描述 
+    string groupname = str.substr(0, idx);                    //获取群名
+    string groupdesc = str.substr(idx + 1, str.size() - idx); //获取群描述
 
     json js;
     js["msgid"] = CREATE_GROUP_MSG;
     js["id"] = g_currentUser.getId();
     js["groupname"] = groupname;
     js["groupdesc"] = groupdesc;
-    string buffer = js.dump();//json序列化成字符串 
+    string buffer = js.dump(); // json序列化成字符串
 
     int len = send(clientfd, buffer.c_str(), strlen(buffer.c_str()) + 1, 0);
     if (-1 == len)
@@ -521,12 +520,12 @@ void creategroup(int clientfd, string str)
 //"addgroup" command handler
 void addgroup(int clientfd, string str)
 {
-    int groupid = atoi(str.c_str());//转成整数 
+    int groupid = atoi(str.c_str()); //转成整数
     json js;
     js["msgid"] = ADD_GROUP_MSG;
     js["id"] = g_currentUser.getId();
     js["groupid"] = groupid;
-    string buffer = js.dump();//json序列化成字符串 
+    string buffer = js.dump(); // json序列化成字符串
 
     int len = send(clientfd, buffer.c_str(), strlen(buffer.c_str()) + 1, 0);
     if (-1 == len)
@@ -580,7 +579,7 @@ void loginout(int clientfd, string)
     else
     {
         isMainMenuRunning = false;
-    }   
+    }
 }
 
 //获取系统时间（聊天信息需要添加时间信息）

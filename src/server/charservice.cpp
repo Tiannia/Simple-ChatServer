@@ -86,10 +86,11 @@ void ChatService::login(const TcpConnectionPtr &conn, json &js, Timestamp time)
             {
                 lock_guard<mutex> lock(_connMutex);
                 _userConnMap.insert({id, conn});
-            } //加个作用域，出了这个右括号就自动解锁
 
-            // id用户登录成功后，向redis订阅channel(id)
-            _redis.subscribe(id);
+                // id用户登录成功后，向redis订阅channel(id)
+                _redis.subscribe(id);
+
+            } //加个作用域，出了这个右括号就自动解锁
 
             //登录成功，更新用户状态信息 state offline=>online
             user.setState("online");
@@ -177,9 +178,9 @@ void ChatService::loginout(const TcpConnectionPtr &conn, json &js, Timestamp tim
         {
             _userConnMap.erase(it);
         }
+        //用户注销，相当于就是下线，在redis中取消订阅通道
+        _redis.unsubscribe(userid);
     }
-    //用户注销，相当于就是下线，在redis中取消订阅通道
-    _redis.unsubscribe(userid);
 
     //更新用户的状态信息
     _userModel.updateState({userid, "", "", "offline"});
@@ -218,6 +219,7 @@ void ChatService::reg(const TcpConnectionPtr &conn, json &js, Timestamp time)
 void ChatService::clientCloseException(const TcpConnectionPtr &conn)
 {
     User user;
+
     {
         lock_guard<mutex> lock(_connMutex);
         for (auto it : _userConnMap) //用迭代器
@@ -230,10 +232,9 @@ void ChatService::clientCloseException(const TcpConnectionPtr &conn)
                 break;
             }
         }
+        //用户注销，相当于下线，在redis中取消订阅通道
+        _redis.unsubscribe(user.getId());
     }
-
-    //用户注销，相当于就是下线，在redis中取消订阅通道
-    _redis.unsubscribe(user.getId());
 
     //更新用户的状态信息
     if (user.getId() != -1)
@@ -258,13 +259,9 @@ void ChatService::oneChat(const TcpConnectionPtr &conn, json &js, Timestamp time
             return;
         }
     }
+
     //查询toid是否在线
     User user = _userModel.query(toid);
-    if (user.getState() == "online")
-    {
-        _redis.publish(toid, js.dump());
-        return;
-    }
 
     if (user.getId() == -1) //用户不存在，返回错误信息给聊天发送方
     {
@@ -274,11 +271,18 @@ void ChatService::oneChat(const TcpConnectionPtr &conn, json &js, Timestamp time
         {
             lock_guard<mutex> lock(_connMutex);
             auto it = _userConnMap.find(toid);
-            if(it != _userConnMap.end())
+            if (it != _userConnMap.end())
             {
                 it->second->send(js.dump());
             }
         }
+        return;
+    }
+
+    if (user.getState() == "online")
+    {
+        lock_guard<mutex> lock(_connMutex);
+        _redis.publish(toid, js.dump());
         return;
     }
 
@@ -293,14 +297,14 @@ void ChatService::addFriend(const TcpConnectionPtr &conn, json &js, Timestamp ti
     int friendid = js["friendid"].get<int>(); //添加好友的id
 
     User user = _userModel.query(friendid);
-    if(user.getId() == -1)
+    if (user.getId() == -1) //好友不存在
     {
         js["msgid"] = ERROR_MSG;
         js["msg"] = "user does not exist, please check!";
         {
             lock_guard<mutex> lock(_connMutex);
             auto it = _userConnMap.find(userid);
-            if(it != _userConnMap.end())
+            if (it != _userConnMap.end())
             {
                 it->second->send(js.dump());
             }

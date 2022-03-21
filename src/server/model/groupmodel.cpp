@@ -1,11 +1,10 @@
 #include "groupmodel.hpp"
-#include "sql_connection_pool.hpp"
+#include "connectionpool.hpp"
 
 //创建群组
 bool GroupModel::createGroup(Group &group)
 {
-    MySQL *mysql = nullptr;
-    connectionRAII mysqlcon(&mysql, connection_pool::GetInstance());
+    auto mysql = ConnectionPool::getConnectionPool()->getConnection();
 
     // 1.组装sql语句
     char sql[1024] = {0};
@@ -23,8 +22,7 @@ bool GroupModel::createGroup(Group &group)
 //加入群组
 void GroupModel::addGroup(int userid, int groupid, string role)
 {
-    MySQL *mysql = nullptr;
-    connectionRAII mysqlcon(&mysql, connection_pool::GetInstance());
+    auto mysql = ConnectionPool::getConnectionPool()->getConnection();
 
     // 1.组装sql语句
     char sql[1024] = {0};
@@ -37,8 +35,7 @@ void GroupModel::addGroup(int userid, int groupid, string role)
 //查询用户所在群组信息
 vector<Group> GroupModel::queryGroups(int userid)
 {
-    MySQL *mysql = nullptr;
-    connectionRAII mysqlcon(&mysql, connection_pool::GetInstance());
+    auto mysql = ConnectionPool::getConnectionPool()->getConnection();
 
     /*
     1. 先根据userid在groupuser表中查询出该用户所属的群组信息
@@ -49,7 +46,7 @@ vector<Group> GroupModel::queryGroups(int userid)
          groupuser b on a.id = b.groupid where b.userid = %d",
             userid);
     //把指定用户的所在的群组信息全部描述出来
-	 
+
     vector<Group> groupVec;
 
     MYSQL_RES *res = mysql->query(sql);
@@ -91,14 +88,13 @@ vector<Group> GroupModel::queryGroups(int userid)
             mysql_free_result(res);
         }
     }
-    return groupVec;//这个东西存着用户的所有群组和所有群组里的用户信息 
+    return groupVec; //这个东西存着用户的所有群组和所有群组里的用户信息
 }
 
 //根据指定的groupid查询群组用户id列表，除userid自己，主要用户群聊业务给群组其它成员群发消息
 vector<int> GroupModel::queryGroupUsers(int userid, int groupid)
 {
-    MySQL *mysql = nullptr;
-    connectionRAII mysqlcon(&mysql, connection_pool::GetInstance());
+    auto mysql = ConnectionPool::getConnectionPool()->getConnection();
 
     char sql[1024] = {0};
     sprintf(sql, "select userid from groupuser where groupid = %d and userid != %d", groupid, userid);
@@ -116,4 +112,3 @@ vector<int> GroupModel::queryGroupUsers(int userid, int groupid)
     }
     return idVec;
 }
-    
