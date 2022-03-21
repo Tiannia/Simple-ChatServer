@@ -78,3 +78,8 @@ cd bin
 ./ChatClient 127.0.0.1 8000
 ./ChatClient 127.0.0.1 8000
 ```
+
+#### Demo:
+![img](https://github.com/Tiannia/intro_to_ai/blob/main/PhotoRepository/demoofchatserver.png?raw=true)
+![img](https://github.com/Tiannia/intro_to_ai/blob/main/PhotoRepository/processlistofmysqlconnection.png?raw=true)
+
