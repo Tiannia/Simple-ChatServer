@@ -97,7 +97,6 @@ ConnectionPool::ConnectionPool()
 		_connectionQue.push(p);
 		_connectionCnt++;
 	}
-	LOG_INFO << "Connect mysql-server success!";
 
 	//启动一个新的线程，作为连接的生产者 linux thread => pthread_create
 	thread produce(std::bind(&ConnectionPool::produceConnectionTask, this));
@@ -110,14 +109,16 @@ ConnectionPool::ConnectionPool()
 
 ConnectionPool::~ConnectionPool()
 {
-	unique_lock<mutex> lock(_queueMutex);
-	_cv.notify_all();
-	while (!_connectionQue.empty())
 	{
-		Connection *p = _connectionQue.front();
-		_connectionQue.pop();
-		delete p; //调用~Connection()释放连接
+		unique_lock<mutex> lock(_queueMutex);
+		while (!_connectionQue.empty())
+		{
+			Connection *p = _connectionQue.front();
+			_connectionQue.pop();
+			delete p; //调用~Connection()释放连接
+		}
 	}
+	_cv.notify_all();
 }
 
 //运行在独立的线程中，专门负责生产新连接
