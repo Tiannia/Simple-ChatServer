@@ -2,14 +2,12 @@
 #include <unistd.h>
 #include <muduo/base/Logging.h>
 
-//线程安全的懒汉单例函数接口
 ConnectionPool *ConnectionPool::getConnectionPool()
 {
 	static ConnectionPool pool; // lock和unlock
 	return &pool;
 }
 
-//从配置文件中加载配置项
 bool ConnectionPool::loadConfigFile()
 {
 	FILE *pf = fopen("../mysql.ini", "r");
@@ -34,7 +32,6 @@ bool ConnectionPool::loadConfigFile()
 			continue;
 		}
 
-		// password=123456\n
 		int endidx = str.find('\n', idx);
 		string key = str.substr(0, idx);
 		string value = str.substr(idx + 1, endidx - idx - 1);
@@ -76,26 +73,26 @@ bool ConnectionPool::loadConfigFile()
 			_connectionTimeout = atoi(value.c_str());
 		}
 	}
+
+	fclose(pf);
+
 	return true;
 }
 
-//连接池的构造
-ConnectionPool::ConnectionPool()
+ConnectionPool::ConnectionPool() : _pool_alive(true)
 {
-	//加载配置项了
 	if (!loadConfigFile())
 	{
 		return;
 	}
 
-	//创建初始数量的连接
 	for (int i = 0; i < _initSize; ++i)
 	{
 		Connection *p = new Connection();
 		p->connect(_ip, _port, _username, _password, _dbname);
-		p->refreshAliveTime(); //刷新一下开始空闲的起始时间
+		p->refreshAliveTime();
 		_connectionQue.push(p);
-		_connectionCnt++;
+		++_connectionCnt;
 	}
 
 	//启动一个新的线程，作为连接的生产者 linux thread => pthread_create
@@ -111,12 +108,16 @@ ConnectionPool::~ConnectionPool()
 {
 	{
 		unique_lock<mutex> lock(_queueMutex);
+		_is_closing = true;
+		_cv_close.wait(lock, [this]
+					   { return _use_count == 0; });
 		while (!_connectionQue.empty())
 		{
 			Connection *p = _connectionQue.front();
 			_connectionQue.pop();
-			delete p; //调用~Connection()释放连接
+			delete p;
 		}
+		_pool_alive = false;
 	}
 	_cv.notify_all();
 }
@@ -127,22 +128,21 @@ void ConnectionPool::produceConnectionTask()
 	for (;;)
 	{
 		unique_lock<mutex> lock(_queueMutex);
-		while (!_connectionQue.empty())
-		{
-			_cv.wait(lock); //队列不空，此处生产线程进入等待状态
-		}
+		_cv.wait(lock, [this]
+				 { return !this->_pool_alive || this->_connectionQue.empty(); });
 
-		//连接数量没有到达上限，继续创建新的连接
+		if (!_pool_alive)
+			break;
+
 		if (_connectionCnt < _maxSize)
 		{
 			Connection *p = new Connection();
 			p->connect(_ip, _port, _username, _password, _dbname);
-			p->refreshAliveTime(); //刷新一下开始空闲的起始时间
+			p->refreshAliveTime();
 			_connectionQue.push(p);
-			_connectionCnt++;
+			++_connectionCnt;
 		}
 
-		//通知消费者线程，可以消费连接了
 		_cv.notify_all();
 	}
 }
@@ -151,14 +151,11 @@ void ConnectionPool::produceConnectionTask()
 shared_ptr<Connection> ConnectionPool::getConnection()
 {
 	unique_lock<mutex> lock(_queueMutex);
-	/**
-	 * 1. 假设生产者线程和获取连接的线程产生了锁竞争，获取连接的线程抢到了锁，则可以在超时时间内 “释放锁，并等待生产者线程建立连接”
-	 * 2. 假设连接数量已到达_maxSize，且都被别的线程拿去使用了，则 “释放锁，并等待等待别的线程释放回连接池”
-	 */
-	while (_connectionQue.empty()) //队列是空的
+
+	while (_connectionQue.empty())
 	{
 		// sleep
-		if (cv_status::timeout == _cv.wait_for(lock, chrono::milliseconds(_connectionTimeout))) // chrono::seconds()就是秒
+		if (cv_status::timeout == _cv.wait_for(lock, chrono::milliseconds(_connectionTimeout))) // chrono::seconds() is second
 		{
 			if (_connectionQue.empty())
 			{
@@ -168,22 +165,21 @@ shared_ptr<Connection> ConnectionPool::getConnection()
 		}
 	}
 
-	/*
-	 * shared_ptr智能指针析构时，会把connection资源直接delete掉，相当于
-	 * 调用connection的析构函数，connection就被close掉了。
-	 * 这里需要自定义shared_ptr的释放资源的方式，把connection直接归还到queue当中
-	 */
 	shared_ptr<Connection> sp(_connectionQue.front(),
 							  [&](Connection *pcon)
 							  {
-								  //这里是在服务器应用线程中调用的，所以一定要考虑队列的线程安全操作
 								  unique_lock<mutex> lock(_queueMutex);
-								  pcon->refreshAliveTime(); //刷新一下开始空闲的起始时间
+								  pcon->refreshAliveTime();
 								  _connectionQue.push(pcon);
+								  --_use_count;
+								  if (_is_closing && _use_count == 0)
+								  {
+									  _cv_close.notify_all();
+								  }
 							  });
-
 	_connectionQue.pop();
-	_cv.notify_all(); //消费完连接以后，通知生产者线程检查一下，如果队列为空了，赶紧生产连接
+	++_use_count;
+	_cv.notify_all();
 
 	return sp;
 }
@@ -193,23 +189,21 @@ void ConnectionPool::scannerConnectionTask()
 {
 	for (;;)
 	{
-		//通过sleep模拟定时效果
 		this_thread::sleep_for(chrono::seconds(_maxIdleTime));
 
-		//扫描整个队列，释放多余的连接
 		unique_lock<mutex> lock(_queueMutex);
 		while (_connectionCnt > _initSize)
 		{
-			Connection *p = _connectionQue.front(); //队头的时间没超过，那后面的时间就都没超过
+			Connection *p = _connectionQue.front();
 			if (p->getAliveeTime() >= (_maxIdleTime * 1000))
 			{
 				_connectionQue.pop();
 				_connectionCnt--;
-				delete p; //调用~Connection()释放连接
+				delete p;
 			}
 			else
 			{
-				break; //队头的连接没有超过_maxIdleTime，其它连接肯定没有
+				break;
 			}
 		}
 	}
