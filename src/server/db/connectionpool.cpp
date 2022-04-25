@@ -192,7 +192,7 @@ void ConnectionPool::scannerConnectionTask()
 		this_thread::sleep_for(chrono::seconds(_maxIdleTime));
 
 		unique_lock<mutex> lock(_queueMutex);
-		while (_connectionCnt > _initSize)
+		while (_connectionCnt > _initSize && _pool_alive)
 		{
 			Connection *p = _connectionQue.front();
 			if (p->getAliveeTime() >= (_maxIdleTime * 1000))

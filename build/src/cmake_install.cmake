@@ -1,4 +1,4 @@
-# Install script for directory: /home/tian/wk/Projects/Simple-ChatServer/src
+# Install script for directory: /home/tian/workstation/test_try/Simple-ChatServer/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,8 +39,8 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/tian/wk/Projects/Simple-ChatServer/build/src/server/cmake_install.cmake")
-  include("/home/tian/wk/Projects/Simple-ChatServer/build/src/client/cmake_install.cmake")
+  include("/home/tian/workstation/test_try/Simple-ChatServer/build/src/server/cmake_install.cmake")
+  include("/home/tian/workstation/test_try/Simple-ChatServer/build/src/client/cmake_install.cmake")
 
 endif()
 

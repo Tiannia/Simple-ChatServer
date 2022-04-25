@@ -7,4 +7,4 @@ src/client/CMakeFiles/ChatClient.dir/main.cpp.o
  ../include/server/model/groupuser.hpp
  ../include/server/model/user.hpp
  ../thirdparty/json.hpp
- /home/tian/wk/Projects/Simple-ChatServer/src/client/main.cpp
+ /home/tian/workstation/test_try/Simple-ChatServer/src/client/main.cpp

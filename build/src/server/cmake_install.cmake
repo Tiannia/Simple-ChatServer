@@ -1,4 +1,4 @@
-# Install script for directory: /home/tian/wk/Projects/Simple-ChatServer/src/server
+# Install script for directory: /home/tian/workstation/test_try/Simple-ChatServer/src/server
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

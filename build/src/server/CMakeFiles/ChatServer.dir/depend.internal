@@ -14,7 +14,7 @@ src/server/CMakeFiles/ChatServer.dir/charserver.cpp.o
  ../include/server/redis/redis.hpp
  ../thirdparty/checkjson.hpp
  ../thirdparty/json.hpp
- /home/tian/wk/Projects/Simple-ChatServer/src/server/charserver.cpp
+ /home/tian/workstation/test_try/Simple-ChatServer/src/server/charserver.cpp
 src/server/CMakeFiles/ChatServer.dir/charservice.cpp.o
  ../include/public.hpp
  ../include/server/charservice.hpp
@@ -27,14 +27,14 @@ src/server/CMakeFiles/ChatServer.dir/charservice.cpp.o
  ../include/server/model/usermodel.hpp
  ../include/server/redis/redis.hpp
  ../thirdparty/json.hpp
- /home/tian/wk/Projects/Simple-ChatServer/src/server/charservice.cpp
+ /home/tian/workstation/test_try/Simple-ChatServer/src/server/charservice.cpp
 src/server/CMakeFiles/ChatServer.dir/db/conncetion.cpp.o
  ../include/server/db/connection.hpp
- /home/tian/wk/Projects/Simple-ChatServer/src/server/db/conncetion.cpp
+ /home/tian/workstation/test_try/Simple-ChatServer/src/server/db/conncetion.cpp
 src/server/CMakeFiles/ChatServer.dir/db/connectionpool.cpp.o
  ../include/server/db/connection.hpp
  ../include/server/db/connectionpool.hpp
- /home/tian/wk/Projects/Simple-ChatServer/src/server/db/connectionpool.cpp
+ /home/tian/workstation/test_try/Simple-ChatServer/src/server/db/connectionpool.cpp
 src/server/CMakeFiles/ChatServer.dir/main.cpp.o
  ../include/server/charserver.hpp
  ../include/server/charservice.hpp
@@ -49,13 +49,13 @@ src/server/CMakeFiles/ChatServer.dir/main.cpp.o
  ../include/server/model/usermodel.hpp
  ../include/server/redis/redis.hpp
  ../thirdparty/json.hpp
- /home/tian/wk/Projects/Simple-ChatServer/src/server/main.cpp
+ /home/tian/workstation/test_try/Simple-ChatServer/src/server/main.cpp
 src/server/CMakeFiles/ChatServer.dir/model/friendmodel.cpp.o
  ../include/server/db/connection.hpp
  ../include/server/db/connectionpool.hpp
  ../include/server/model/friendmodel.hpp
  ../include/server/model/user.hpp
- /home/tian/wk/Projects/Simple-ChatServer/src/server/model/friendmodel.cpp
+ /home/tian/workstation/test_try/Simple-ChatServer/src/server/model/friendmodel.cpp
 src/server/CMakeFiles/ChatServer.dir/model/groupmodel.cpp.o
  ../include/server/db/connection.hpp
  ../include/server/db/connectionpool.hpp
@@ -63,18 +63,18 @@ src/server/CMakeFiles/ChatServer.dir/model/groupmodel.cpp.o
  ../include/server/model/groupmodel.hpp
  ../include/server/model/groupuser.hpp
  ../include/server/model/user.hpp
- /home/tian/wk/Projects/Simple-ChatServer/src/server/model/groupmodel.cpp
+ /home/tian/workstation/test_try/Simple-ChatServer/src/server/model/groupmodel.cpp
 src/server/CMakeFiles/ChatServer.dir/model/offlinemessagemodel.cpp.o
  ../include/server/db/connection.hpp
  ../include/server/db/connectionpool.hpp
  ../include/server/model/offlinemessagemodel.hpp
- /home/tian/wk/Projects/Simple-ChatServer/src/server/model/offlinemessagemodel.cpp
+ /home/tian/workstation/test_try/Simple-ChatServer/src/server/model/offlinemessagemodel.cpp
 src/server/CMakeFiles/ChatServer.dir/model/usermodel.cpp.o
  ../include/server/db/connection.hpp
  ../include/server/db/connectionpool.hpp
  ../include/server/model/user.hpp
  ../include/server/model/usermodel.hpp
- /home/tian/wk/Projects/Simple-ChatServer/src/server/model/usermodel.cpp
+ /home/tian/workstation/test_try/Simple-ChatServer/src/server/model/usermodel.cpp
 src/server/CMakeFiles/ChatServer.dir/redis/redis.cpp.o
  ../include/server/redis/redis.hpp
- /home/tian/wk/Projects/Simple-ChatServer/src/server/redis/redis.cpp
+ /home/tian/workstation/test_try/Simple-ChatServer/src/server/redis/redis.cpp
