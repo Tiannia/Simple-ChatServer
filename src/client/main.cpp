@@ -338,7 +338,8 @@ void readTaskHandler(int clientfd)
 //显示当前登录成功用户的基本信息
 void showCurrentUserData()
 {
-    cout << "======================login user======================" << endl;
+    cout << "======================================================" << endl;
+    cout << "----------------------login user----------------------" << endl;
     cout << "current login user => id:" << g_currentUser.getId() << " name:" << g_currentUser.getName() << endl;
     cout << "----------------------friend list---------------------" << endl;
     if (!g_currentUserFriendList.empty()) //如果好友列表不为空

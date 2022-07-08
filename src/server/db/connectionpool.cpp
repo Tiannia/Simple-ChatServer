@@ -119,8 +119,8 @@ ConnectionPool::~ConnectionPool()
 		}
 		_pool_alive = false;
 		_cv.notify_all();
+		LOG_INFO << "~ConnectionPool() has been called, program exit at once.";
 	}
-	LOG_INFO << "~ConnectionPool() has been called, program exit at once.";
 }
 
 //运行在独立的线程中，专门负责生产新连接
