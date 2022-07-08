@@ -27,11 +27,11 @@ bool Connection::connect(string ip, unsigned short port,
 	if (p != nullptr)
 	{
 		mysql_query(_conn, "set names gbk");
-		LOG_INFO << "Connect mysql-server success!";
+		LOG_DEBUG << "Connect mysql-server success!";
 	}
 	else
 	{
-		LOG_INFO << "Connect mysql-server fail!";
+		LOG_DEBUG << "Connect mysql-server fail!";
 	}
 
 	return p;

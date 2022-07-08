@@ -53,9 +53,7 @@ void ChatServer::onMessage(const TcpConnectionPtr &conn,
     //测试，添加json打印代码
     cout << buf << endl;
 
-    //验证json字符串是否合法，暂时还未发生json字符串不合法的情况
-    //用户在构造json消息体时，客户端代码是通过json库的dump()函数序列化并发送的，因此可以保证在服务端回调onMessage时的字符串能够正常parse()
-    //如果怕影响业务处理效率的话，可注释掉
+    //验证json字符串是否合法
     JsonString cjs;
     if(!cjs.CheckFormat(buf)) return;
 
