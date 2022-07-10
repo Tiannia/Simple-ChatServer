@@ -32,7 +32,7 @@ CREATE TABLE groupuser
 (
 groupid INT NOT NULL,
 userid INT NOT NULL,
-groupprole enum('creator','normal') DEFAULT'normal',
+grouprole enum('creator','normal') DEFAULT'normal',
 PRIMARY KEY(groupid,userid)
 )ENGINE=INNODB;
 
